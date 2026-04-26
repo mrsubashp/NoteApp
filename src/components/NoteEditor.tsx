@@ -17,7 +17,9 @@ import {
   Loader2,
   RefreshCw,
   CloudCheck,
-  CloudUpload
+  CloudUpload,
+  Search,
+  Replace
 } from 'lucide-react';
 import { Note, Attachment } from '../types';
 import { jsPDF } from 'jspdf';
@@ -56,6 +58,9 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdate, onDelete
   const [showInvite, setShowInvite] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'idle'>('idle');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [findText, setFindText] = useState('');
+  const [replaceText, setReplaceText] = useState('');
   
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialMount = useRef(true);
@@ -259,6 +264,27 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdate, onDelete
     }
   };
 
+  const handleFindReplace = (replaceAll = false) => {
+    if (!findText) return;
+    
+    // Using a regex to find/replace text while trying to avoid HTML tags
+    // This is a simple implementation. In a complex editor, we'd use the Quill API.
+    // We escape special characters for regex
+    const escapedFind = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escapedFind, replaceAll ? 'g' : '');
+    
+    // Basic search and replace in the HTML content string
+    // Note: Replacing directly in HTML string can be risky if 'findText' matches HTML tags
+    // but for user-facing text it usually works fine unless they search for tag fragments.
+    const newContent = content.replace(regex, replaceText);
+    
+    if (newContent !== content) {
+      setContent(newContent);
+      setSaveStatus('idle');
+      handleSave();
+    }
+  };
+
   const scrollToReminder = () => {
     const reminderRow = document.getElementById('reminder-row');
     if (reminderRow) {
@@ -315,6 +341,16 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdate, onDelete
              className="p-2 text-slate-400 hover:text-red-600 transition-colors"
            >
              <Trash2 size={20} />
+           </button>
+           <button 
+             onClick={() => setIsSearchOpen(!isSearchOpen)}
+             title="Find and Replace"
+             className={cn(
+               "p-2 transition-colors",
+               isSearchOpen ? "text-blue-600 bg-blue-50 rounded-lg" : "text-slate-400 hover:text-slate-600"
+             )}
+           >
+             <Search size={20} />
            </button>
            <div className="h-6 w-[1px] bg-slate-100 mx-1 sm:mx-2" />
            <div className="hidden sm:flex items-center space-x-1">
@@ -398,6 +434,61 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdate, onDelete
           </button>
         </div>
       </header>
+
+      {/* Find and Replace Panel */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="bg-slate-50 border-b border-slate-100 overflow-hidden"
+          >
+            <div className="max-w-3xl mx-auto px-8 py-3 flex flex-wrap items-center gap-3">
+              <div className="flex-1 min-w-[200px] relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input 
+                  type="text"
+                  placeholder="Find..."
+                  value={findText}
+                  onChange={(e) => setFindText(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 transition-all font-medium"
+                />
+              </div>
+              <div className="flex-1 min-w-[200px] relative">
+                <Replace size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input 
+                  type="text"
+                  placeholder="Replace with..."
+                  value={replaceText}
+                  onChange={(e) => setReplaceText(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 transition-all font-medium"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => handleFindReplace(false)}
+                  className="px-3 py-1.5 bg-white border border-slate-200 text-xs font-bold text-slate-600 rounded-lg hover:bg-slate-100 transition-all shadow-sm"
+                >
+                  Find Next
+                </button>
+                <button 
+                  onClick={() => handleFindReplace(true)}
+                  className="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-all shadow-sm"
+                >
+                  Replace All
+                </button>
+                <button 
+                  onClick={() => setIsSearchOpen(false)}
+                  className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto custom-scrollbar px-4 sm:px-0">
