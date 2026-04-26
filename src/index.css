@@ -63,3 +63,21 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #cbd5e1;
 }
+
+/* Quill Task List Styles */
+.ql-editor li[data-list="checked"] {
+  text-decoration: line-through;
+  color: #94a3b8;
+}
+
+.ql-editor li[data-list="checked"]::before,
+.ql-editor li[data-list="unchecked"]::before {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ql-editor li[data-list="checked"]:hover::before,
+.ql-editor li[data-list="unchecked"]:hover::before {
+  opacity: 0.8;
+  transform: scale(1.1);
+}

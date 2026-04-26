@@ -39,8 +39,8 @@ interface NoteEditorProps {
 
 const QUILL_MODULES = {
   toolbar: [
-    ['bold', 'italic', 'underline'],
-    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
     ['clean']
   ],
 };
@@ -271,6 +271,12 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdate, onDelete
     }
   };
 
+  const taskStats = (() => {
+    const total = (content.match(/data-list="(checked|unchecked)"/g) || []).length;
+    const completed = (content.match(/data-list="checked"/g) || []).length;
+    return { total, completed, percent: total > 0 ? (completed / total) * 100 : 0 };
+  })();
+
   if (!note) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white h-full">
@@ -397,14 +403,30 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdate, onDelete
       <div className="flex-1 overflow-y-auto custom-scrollbar px-4 sm:px-0">
         <div className="max-w-3xl mx-auto py-8 sm:py-12">
           <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              {reminder?.enabled && (
-                <span className="bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full font-medium flex items-center">
-                  <Calendar size={12} className="mr-1.5" />
-                  {format(new Date(reminder.datetime as string), 'MMM d, p')}
-                </span>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center space-x-3">
+                {reminder?.enabled && (
+                  <span className="bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full font-medium flex items-center">
+                    <Calendar size={12} className="mr-1.5" />
+                    {format(new Date(reminder.datetime as string), 'MMM d, p')}
+                  </span>
+                )}
+                <span className="text-slate-400 text-xs">Updated {format(new Date(note.updatedAt as string), 'MMM d, yyyy')}</span>
+              </div>
+              
+              {taskStats.total > 0 && (
+                <div className="flex items-center gap-3 w-48">
+                  <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-500 transition-all duration-500" 
+                      style={{ width: `${taskStats.percent}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">
+                    {taskStats.completed}/{taskStats.total} Tasks
+                  </span>
+                </div>
               )}
-              <span className="text-slate-400 text-xs">Updated {format(new Date(note.updatedAt as string), 'MMM d, yyyy')}</span>
             </div>
             
             <div className="flex -space-x-2 overflow-hidden">
