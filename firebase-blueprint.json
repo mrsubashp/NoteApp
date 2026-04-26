@@ -1,0 +1,53 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "App user profile metadata",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "categories": { "type": "array" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Note": {
+      "title": "Note",
+      "description": "A user's note with tags and reminders",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "tags": { "type": "array" },
+        "category": { "type": "string" },
+        "reminder": {
+          "type": "object",
+          "properties": {
+            "datetime": { "type": "string", "format": "date-time" },
+            "enabled": { "type": "boolean" }
+          }
+        },
+        "attachments": { "type": "array" },
+        "sharedWith": { 
+          "type": "array",
+          "description": "List of user emails invited to collaborate"
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "content", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile data"
+    },
+    "/notes/{noteId}": {
+      "schema": "Note",
+      "description": "Collection of user notes"
+    }
+  }
+}

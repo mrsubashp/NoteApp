@@ -1,0 +1,6 @@
+{
+  "name": "NotePro iOS",
+  "description": "A high-performance iOS-styled note-taking app with categories, tags, cloud sync, and reminders.",
+  "requestFramePermissions": ["notifications"],
+  "majorCapabilities": []
+}
