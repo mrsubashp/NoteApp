@@ -1,9 +1,0 @@
-{
-	"appId": "com.notepro.app",
-	"appName": "Noted",
-	"webDir": "dist",
-	"server": {
-		"androidScheme": "https"
-	},
-	"packageClassList": []
-}
