@@ -57,6 +57,29 @@ function geminiRateLimiter(
 // ---- App ----
 const app = express();
 app.use(express.json({ limit: '50kb' }));
+
+// Security headers for every response
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline'",        // Vite injects inline module scripts
+      "style-src 'self' 'unsafe-inline'",          // Tailwind + ReactQuill use inline styles
+      "img-src 'self' data: https:",               // OAuth provider profile photos
+      "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com",
+      "frame-src https://accounts.google.com https://appleid.apple.com https://login.microsoftonline.com",
+      "frame-ancestors 'none'",
+      "object-src 'none'",
+      "base-uri 'self'",
+    ].join('; '),
+  );
+  next();
+});
+
 app.use('/api/gemini', geminiRateLimiter);
 
 // --- Gemini endpoints ---

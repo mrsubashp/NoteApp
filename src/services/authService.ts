@@ -75,8 +75,8 @@ async function syncUserProfile(user: User) {
   if (!userDoc.exists()) {
     const profile: UserProfile = {
       uid: user.uid,
-      email: user.email || '',
-      displayName: user.displayName || 'User',
+      email: (user.email || '').slice(0, 254),          // RFC 5321 max
+      displayName: (user.displayName || 'User').trim().slice(0, 100),
       categories: ['General', 'Work', 'Personal', 'Ideas'],
       syncPreference: 'firebase'
     };

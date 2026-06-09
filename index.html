@@ -3,11 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
+    <!--
+      CSP meta tag applies during `npm run dev` (Vite dev server).
+      In production the Express server sends stricter HTTP headers that also
+      cover frame-ancestors (not settable via meta tag).
+    -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline';
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: https:;
+      connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com;
+      frame-src https://accounts.google.com https://appleid.apple.com https://login.microsoftonline.com;
+      object-src 'none';
+      base-uri 'self'
+    " />
+    <title>NotePro</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

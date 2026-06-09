@@ -13,6 +13,7 @@ import { NoteList } from './components/NoteList';
 import { NoteEditor } from './components/NoteEditor';
 import { CloudSyncSettings } from './components/CloudSyncSettings';
 import { AiNoteGenerator } from './components/AiNoteGenerator';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { LogOut, Bell, Settings, StickyNote as StickyNoteIcon, Cloud, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
@@ -71,6 +72,13 @@ export default function App() {
 
   // Reminder Checker
   useEffect(() => {
+    // Strip HTML tags from Quill content before using as plain text in notifications
+    const stripHtml = (html: string) => {
+      const div = document.createElement('div');
+      div.innerHTML = html;
+      return div.textContent ?? '';
+    };
+
     const checkReminders = () => {
       const now = new Date();
       notes.forEach(note => {
@@ -78,13 +86,14 @@ export default function App() {
           const reminderTime = new Date(note.reminder.datetime);
           // Check if notification is within the last minute (to avoid missing it due to interval)
           if (reminderTime <= now && reminderTime > new Date(now.getTime() - 60000)) {
+            const plainBody = stripHtml(note.content).slice(0, 100);
             if ("Notification" in window && Notification.permission === "granted") {
               new Notification(`NotePro Reminder: ${note.title}`, {
-                body: note.content.slice(0, 100),
+                body: plainBody,
                 icon: '/vite.svg'
               });
             } else {
-              alert(`Reminder: ${note.title}\n\n${note.content.slice(0, 50)}...`);
+              alert(`Reminder: ${note.title}\n\n${plainBody}`);
             }
             // Disable reminder after triggered to prevent repeats
             updateNote(note.id, { reminder: { ...note.reminder, enabled: false } });
@@ -332,10 +341,12 @@ export default function App() {
       </div>
 
       {isAiGeneratorOpen && (
-        <AiNoteGenerator 
-          onGenerated={handleAiNoteGenerated}
-          onClose={() => setIsAiGeneratorOpen(false)}
-        />
+        <ErrorBoundary>
+          <AiNoteGenerator
+            onGenerated={handleAiNoteGenerated}
+            onClose={() => setIsAiGeneratorOpen(false)}
+          />
+        </ErrorBoundary>
       )}
     </div>
   );
