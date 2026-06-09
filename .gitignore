@@ -3,6 +3,19 @@ build/
 dist/
 coverage/
 .DS_Store
+Thumbs.db
 *.log
+
+# Environment files — never commit real secrets
 .env*
 !.env.example
+*.local
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo

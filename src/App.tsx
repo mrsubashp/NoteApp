@@ -200,13 +200,15 @@ export default function App() {
       {isMobile && (
         <header className="fixed top-0 left-0 right-0 h-14 bg-white border-b border-slate-100 flex items-center justify-between px-4 z-40">
           <div className="flex items-center gap-3">
-            <button 
+            <button
               onClick={() => setIsSidebarOpen(true)}
+              aria-label="Open navigation menu"
+              aria-expanded={isSidebarOpen}
               className="p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
             >
-              <div className="w-5 h-0.5 bg-slate-600 mb-1"></div>
-              <div className="w-5 h-0.5 bg-slate-600 mb-1"></div>
-              <div className="w-5 h-0.5 bg-slate-600"></div>
+              <div className="w-5 h-0.5 bg-slate-600 mb-1" aria-hidden="true"></div>
+              <div className="w-5 h-0.5 bg-slate-600 mb-1" aria-hidden="true"></div>
+              <div className="w-5 h-0.5 bg-slate-600" aria-hidden="true"></div>
             </button>
             <div className="flex items-center space-x-2">
               <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-xs">N</div>
@@ -214,11 +216,12 @@ export default function App() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-             <button 
+             <button
                onClick={() => setIsAiGeneratorOpen(true)}
+               aria-label="Generate note with AI"
                className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
              >
-               <Sparkles size={20} />
+               <Sparkles size={20} aria-hidden="true" />
              </button>
           </div>
         </header>
@@ -237,8 +240,8 @@ export default function App() {
             <span className="font-semibold text-lg tracking-tight text-slate-900">Noted</span>
           </div>
           {isMobile && (
-            <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-slate-400">
-              <LogOut size={20} className="rotate-180" />
+            <button onClick={() => setIsSidebarOpen(false)} aria-label="Close navigation menu" className="p-2 text-slate-400">
+              <LogOut size={20} className="rotate-180" aria-hidden="true" />
             </button>
           )}
         </div>

@@ -345,37 +345,42 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdate, onDelete
       <header className="h-16 px-4 sm:px-8 flex items-center justify-between border-b border-slate-100 shrink-0 sticky top-0 bg-white z-10">
         <div className="flex items-center space-x-1 sm:space-x-2">
             {onBack && (
-              <button 
+              <button
                 onClick={onBack}
+                aria-label="Back to note list"
                 className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg mr-1"
               >
-                <RefreshCw size={20} className="-rotate-90" />
+                <RefreshCw size={20} className="-rotate-90" aria-hidden="true" />
               </button>
             )}
-            <button 
-             onClick={exportAsText}
-             title="Export as Text"
-             className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
-           >
-             <FileIcon size={20} />
-           </button>
-           <button 
-             onClick={() => onDelete(note.id)}
-             title="Delete Note"
-             className="p-2 text-slate-400 hover:text-red-600 transition-colors"
-           >
-             <Trash2 size={20} />
-           </button>
-           <button 
-             onClick={() => setIsSearchOpen(!isSearchOpen)}
-             title="Find and Replace"
-             className={cn(
-               "p-2 transition-colors",
-               isSearchOpen ? "text-blue-600 bg-blue-50 rounded-lg" : "text-slate-400 hover:text-slate-600"
-             )}
-           >
-             <Search size={20} />
-           </button>
+            <button
+              onClick={exportAsText}
+              title="Export as Text"
+              aria-label="Export as text file"
+              className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <FileIcon size={20} aria-hidden="true" />
+            </button>
+            <button
+              onClick={() => onDelete(note.id)}
+              title="Delete Note"
+              aria-label="Delete note"
+              className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+            >
+              <Trash2 size={20} aria-hidden="true" />
+            </button>
+            <button
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              title="Find and Replace"
+              aria-label={isSearchOpen ? 'Close find and replace' : 'Open find and replace'}
+              aria-expanded={isSearchOpen}
+              className={cn(
+                "p-2 transition-colors",
+                isSearchOpen ? "text-blue-600 bg-blue-50 rounded-lg" : "text-slate-400 hover:text-slate-600"
+              )}
+            >
+              <Search size={20} aria-hidden="true" />
+            </button>
            <div className="h-6 w-[1px] bg-slate-100 mx-1 sm:mx-2" />
            <div className="hidden sm:flex items-center space-x-1">
              <button 
@@ -413,12 +418,13 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdate, onDelete
            
            {/* Mobile AI Menu */}
            <div className="flex sm:hidden items-center">
-              <button 
+              <button
                 onClick={handleAiSummarize}
                 disabled={isAiLoading}
+                aria-label="Summarize note with AI"
                 className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg"
               >
-                <Sparkles size={20} />
+                <Sparkles size={20} aria-hidden="true" />
               </button>
            </div>
         </div>
@@ -611,10 +617,11 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdate, onDelete
               placeholder="Project Phoenix Strategy"
               className="text-2xl sm:text-4xl font-bold text-slate-900 border-none p-0 focus:ring-0 placeholder:text-slate-200 w-full mb-4 pr-10"
             />
-            <button 
+            <button
               onClick={handleAiSuggestTitle}
               disabled={isAiLoading}
               title="Suggest AI Title"
+              aria-label="Suggest title with AI"
               className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-purple-400 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
             >
               {isAiLoading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
@@ -625,7 +632,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdate, onDelete
             {tags.map(tag => (
               <span key={tag} className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] uppercase tracking-wider font-bold rounded flex items-center gap-1 group">
                 {tag}
-                <button onClick={() => removeTag(tag)} className="opacity-40 group-hover:opacity-100">×</button>
+                <button onClick={() => removeTag(tag)} aria-label={`Remove tag ${tag}`} className="opacity-40 group-hover:opacity-100">×</button>
               </span>
             ))}
             <div className="relative">

@@ -13,7 +13,7 @@ import { GoogleGenAI } from '@google/genai';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT) || 3001;
-const MODEL = 'gemini-2.0-flash';
+const MODEL = process.env.GEMINI_MODEL ?? 'gemini-2.0-flash';
 
 // ---- AI client (lazy — validates key at request time, not startup) ----
 function getAI(): GoogleGenAI {

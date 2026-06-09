@@ -1,19 +1,24 @@
-import { 
-  collection, 
-  query, 
-  where, 
+import {
+  collection,
+  query,
+  where,
   or,
-  orderBy, 
-  onSnapshot, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
+  orderBy,
+  limit,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
   serverTimestamp,
   arrayUnion,
   arrayRemove,
   Timestamp
 } from 'firebase/firestore';
+
+// Cap real-time listener results. For > NOTES_LIMIT notes, full cursor-based
+// pagination (startAfter + multiple listeners) would be needed.
+export const NOTES_LIMIT = 100;
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { Note } from '../types';
 
@@ -26,7 +31,8 @@ export const subscribeToNotes = (userId: string, userEmail: string, callback: (n
       where('userId', '==', userId),
       where('sharedWith', 'array-contains', userEmail)
     ),
-    orderBy('updatedAt', 'desc')
+    orderBy('updatedAt', 'desc'),
+    limit(NOTES_LIMIT)
   );
 
   return onSnapshot(q, (snapshot) => {

@@ -39,28 +39,31 @@ export const NoteList: React.FC<NoteListProps> = ({ notes, activeNoteId, onNoteS
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold tracking-tight text-slate-900">Notes</h1>
           <div className="flex items-center gap-1.5">
-            <button 
+            <button
               onClick={onAiGenerate}
               title="Generate with AI"
+              aria-label="Generate note with AI"
               className="p-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 active:scale-95 transition-all shadow-sm"
             >
-              <Sparkles size={18} />
+              <Sparkles size={18} aria-hidden="true" />
             </button>
-            <button 
+            <button
               id="new-note-btn"
               onClick={onNewNote}
+              aria-label="New note"
               className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:scale-95 transition-all shadow-sm"
             >
-              <Plus size={18} />
+              <Plus size={18} aria-hidden="true" />
             </button>
           </div>
         </div>
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-          <input 
+          <input
             type="text"
             placeholder="Search notes..."
+            aria-label="Search notes"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-slate-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-400"
