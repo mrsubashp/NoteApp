@@ -787,7 +787,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdate, onDelete
             <div className="w-6 h-6 rounded-full bg-slate-200 border border-white ring-2 ring-slate-50 flex items-center justify-center text-[10px] font-bold text-slate-500 uppercase">
               {note.userId.slice(0, 2)}
             </div>
-            <span className="ml-2 text-xs font-medium text-slate-600">Syncing with iCloud...</span>
+            <span className="ml-2 text-xs font-medium text-slate-600">Saved to NotePro Cloud</span>
          </div>
       </footer>
     </div>

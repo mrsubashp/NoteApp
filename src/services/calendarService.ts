@@ -39,8 +39,6 @@ export const createCalendarEvent = async (title: string, description: string, da
     if (!response.ok) {
       const error = await response.json();
       console.error('Calendar API Error:', error);
-    } else {
-      console.log('Calendar event created successfully');
     }
   } catch (error) {
     console.error('Failed to create calendar event:', error);

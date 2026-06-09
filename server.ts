@@ -58,6 +58,22 @@ function geminiRateLimiter(
 const app = express();
 app.use(express.json({ limit: '50kb' }));
 
+// Disable proxy trust: req.ip reflects the real connecting socket address,
+// not a spoofable X-Forwarded-For value (important for rate limiter correctness).
+app.set('trust proxy', false);
+
+// Reject /api requests whose Origin header is set to a non-localhost value.
+// This prevents malicious pages running in the user's browser from burning the
+// Gemini API quota by calling http://127.0.0.1:3001/api/* cross-origin.
+app.use('/api', (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const origin = req.headers.origin;
+  if (origin && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+    res.status(403).json({ error: 'Cross-origin requests not allowed' });
+    return;
+  }
+  next();
+});
+
 // Security headers for every response
 app.use((_req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -169,9 +185,10 @@ app.post('/api/gemini/generate', async (req, res) => {
 
 // --- Serve built frontend in production ---
 const dist = path.join(__dirname, 'dist');
+const indexHtml = path.resolve(dist, 'index.html'); // resolve → absolute, no traversal ambiguity
 app.use(express.static(dist));
 app.get('*', (_req, res) => {
-  res.sendFile(path.join(dist, 'index.html'));
+  res.sendFile(indexHtml);
 });
 
 app.listen(PORT, '127.0.0.1', () => {

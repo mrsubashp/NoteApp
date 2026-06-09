@@ -44,10 +44,17 @@ service cloud.firestore {
         && request.resource.data.title is string
         && request.resource.data.title.size() <= 200;
         
+      // Owner: may update any field, but cannot transfer ownership.
+      // Collaborator: may update note content, but CANNOT touch sharedWith
+      // (prevents a collaborator from adding/removing other collaborators).
       allow update: if isSignedIn() && (
-        resource.data.userId == request.auth.uid || 
-        request.auth.token.email in resource.data.sharedWith
-      ) && request.resource.data.userId == resource.data.userId; // userId must remain same
+        (resource.data.userId == request.auth.uid
+          && request.resource.data.userId == resource.data.userId)
+        ||
+        (request.auth.token.email in resource.data.sharedWith
+          && request.resource.data.userId == resource.data.userId
+          && request.resource.data.sharedWith == resource.data.sharedWith)
+      );
         
       allow delete: if isSignedIn() && resource.data.userId == request.auth.uid; // Only owner can delete
     }
