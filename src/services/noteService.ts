@@ -80,11 +80,18 @@ export const deleteNote = async (noteId: string) => {
   }
 };
 
+function assertValidEmail(email: string) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
+    throw new Error('Invalid email address.');
+  }
+}
+
 export const shareNote = async (noteId: string, email: string) => {
+  assertValidEmail(email);
   try {
     const noteRef = doc(db, COLLECTION_NAME, noteId);
     await updateDoc(noteRef, {
-      sharedWith: arrayUnion(email)
+      sharedWith: arrayUnion(email.trim().toLowerCase())
     });
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, `${COLLECTION_NAME}/${noteId}`);
@@ -92,10 +99,11 @@ export const shareNote = async (noteId: string, email: string) => {
 };
 
 export const unshareNote = async (noteId: string, email: string) => {
+  assertValidEmail(email);
   try {
     const noteRef = doc(db, COLLECTION_NAME, noteId);
     await updateDoc(noteRef, {
-      sharedWith: arrayRemove(email)
+      sharedWith: arrayRemove(email.trim().toLowerCase())
     });
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, `${COLLECTION_NAME}/${noteId}`);

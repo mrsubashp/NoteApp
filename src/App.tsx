@@ -97,7 +97,7 @@ export default function App() {
       Notification.requestPermission();
     }
 
-    const interval = setInterval(checkReminders, 30000); // Check every 30 seconds
+    const interval = setInterval(checkReminders, 60000); // Check every 60 s (matches the 60 s window above — prevents double-fire)
     return () => clearInterval(interval);
   }, [notes]);
 

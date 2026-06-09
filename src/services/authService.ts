@@ -84,7 +84,12 @@ async function syncUserProfile(user: User) {
   }
 }
 
-export const logout = () => signOut(auth);
+export const logout = async () => {
+  // Clear tokens before signOut so getAccessToken() never returns a stale credential
+  _accessToken = null;
+  _idToken = null;
+  await signOut(auth);
+};
 
 export const subscribeToAuth = (callback: (user: User | null) => void) => {
   return onAuthStateChanged(auth, callback);

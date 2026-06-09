@@ -31,9 +31,33 @@ function requireText(value: unknown, maxLen = 20_000): string {
   return value;
 }
 
+// ---- Per-IP rate limiter: 20 Gemini requests per minute ----
+const _rateLimits = new Map<string, { count: number; resetAt: number }>();
+
+function geminiRateLimiter(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
+  const ip = req.ip ?? 'unknown';
+  const now = Date.now();
+  let entry = _rateLimits.get(ip);
+  if (!entry || now > entry.resetAt) {
+    entry = { count: 0, resetAt: now + 60_000 };
+    _rateLimits.set(ip, entry);
+  }
+  if (entry.count >= 20) {
+    res.status(429).json({ error: 'Too many requests — try again in a minute.' });
+    return;
+  }
+  entry.count++;
+  next();
+}
+
 // ---- App ----
 const app = express();
 app.use(express.json({ limit: '50kb' }));
+app.use('/api/gemini', geminiRateLimiter);
 
 // --- Gemini endpoints ---
 

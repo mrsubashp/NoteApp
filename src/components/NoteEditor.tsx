@@ -39,6 +39,15 @@ interface NoteEditorProps {
   onBack?: () => void;
 }
 
+const ALLOWED_ATTACHMENT_TYPES = new Set([
+  'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+  'application/pdf',
+  'text/plain', 'text/csv',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+]);
+const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024; // 10 MB
+
 const QUILL_MODULES = {
   toolbar: [
     ['bold', 'italic', 'underline', 'strike'],
@@ -55,6 +64,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdate, onDelete
   const [category, setCategory] = useState('');
   const [reminder, setReminder] = useState<{ datetime: string, enabled: boolean } | null>(null);
   const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteError, setInviteError] = useState('');
   const [showInvite, setShowInvite] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'idle'>('idle');
@@ -136,9 +146,14 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdate, onDelete
 
   const handleShare = async () => {
     if (!note || !inviteEmail.trim()) return;
-    await shareNote(note.id, inviteEmail.trim());
-    setInviteEmail('');
-    setShowInvite(false);
+    setInviteError('');
+    try {
+      await shareNote(note.id, inviteEmail.trim());
+      setInviteEmail('');
+      setShowInvite(false);
+    } catch (err: any) {
+      setInviteError(err.message ?? 'Failed to share note.');
+    }
   };
 
   const handleRemoveCollaborator = async (email: string) => {
@@ -196,16 +211,25 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdate, onDelete
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !note) return;
-    
-    // In a real app we'd upload to Firebase Storage
-    // Here we'll simulate an attachment
+
+    if (!ALLOWED_ATTACHMENT_TYPES.has(file.type)) {
+      alert('Unsupported file type. Allowed: images (JPEG/PNG/GIF/WebP/SVG), PDF, plain text, CSV, Word (.docx), Excel (.xlsx).');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > MAX_ATTACHMENT_BYTES) {
+      alert('File is too large. Maximum allowed size is 10 MB.');
+      e.target.value = '';
+      return;
+    }
+
     const newAttachment: Attachment = {
       name: file.name,
-      url: '#', // Placeholder
+      url: '#', // Placeholder — replace with Firebase Storage URL when upload is implemented
       type: file.type,
       size: file.size
     };
-    
+
     const newAttachments = [...(note.attachments || []), newAttachment];
     onUpdate(note.id, { attachments: newAttachments });
   };
@@ -546,20 +570,23 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdate, onDelete
                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
                   <h4 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Share with collaborator</h4>
                   <div className="flex gap-2">
-                    <input 
-                      type="email" 
+                    <input
+                      type="email"
                       placeholder="email@example.com"
                       value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
+                      onChange={(e) => { setInviteEmail(e.target.value); setInviteError(''); }}
                       className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                     />
-                    <button 
+                    <button
                       onClick={handleShare}
                       className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700"
                     >
                       Invite
                     </button>
                   </div>
+                  {inviteError && (
+                    <p className="text-xs text-red-500 font-medium mt-1">{inviteError}</p>
+                  )}
                   {note.sharedWith && note.sharedWith.length > 0 && (
                     <div className="pt-2 space-y-1">
                       {note.sharedWith.map(email => (
