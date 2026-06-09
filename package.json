@@ -4,8 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
+    "dev:api": "tsx watch server.ts",
+    "dev:ui": "vite --port=3000 --host=0.0.0.0",
+    "dev": "tsx watch server.ts & vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
+    "start": "tsx server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"

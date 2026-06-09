@@ -1,66 +1,39 @@
-import { GoogleGenAI } from "@google/genai";
+// All Gemini calls go through the local Express proxy (/api/gemini/*).
+// The API key is never loaded in the browser — it lives only in server.ts.
 
-const getApiKey = () => {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) {
-    console.warn("GEMINI_API_KEY is not defined. AI features will be unavailable.");
-    return "dummy-key"; // Prevent crash on initialization
+async function post<T>(endpoint: string, body: Record<string, string>): Promise<T> {
+  const res = await fetch(`/api/gemini/${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error((err as { error?: string }).error ?? 'AI request failed');
   }
-  return key;
+  return res.json() as Promise<T>;
+}
+
+export const summarizeNote = async (content: string): Promise<string | undefined> => {
+  const { text } = await post<{ text: string }>('summarize', { content });
+  return text;
 };
 
-const ai = new GoogleGenAI({ apiKey: getApiKey() });
-
-export const summarizeNote = async (content: string) => {
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `Summarize the following note content concisely. Maintain the tone but make it a short overview:\n\n${content}`,
-  });
-  return response.text;
+export const improveNote = async (content: string): Promise<string | undefined> => {
+  const { text } = await post<{ text: string }>('improve', { content });
+  return text;
 };
 
-export const improveNote = async (content: string) => {
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `Improve the clarity, grammar, and flow of the following note content. Keep it professional yet natural. Return ONLY the improved content:\n\n${content}`,
-  });
-  return response.text;
+export const suggestTags = async (title: string, content: string): Promise<string[]> => {
+  const { tags } = await post<{ tags: string[] }>('suggest-tags', { title, content });
+  return tags ?? [];
 };
 
-export const suggestTags = async (title: string, content: string) => {
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `Based on the following note title and content, suggest 3-5 relevant tags as a comma-separated list. Return ONLY the tags:\n\nTitle: ${title}\nContent: ${content}`,
-  });
-  return response.text?.split(',').map(tag => tag.trim()) || [];
+export const suggestTitle = async (content: string): Promise<string> => {
+  const { text } = await post<{ text: string }>('suggest-title', { content });
+  return text ?? '';
 };
 
-export const suggestTitle = async (content: string) => {
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `Suggest a concise, catchy title for the following note content. Return ONLY the title:\n\n${content}`,
-  });
-  return response.text?.trim() || "";
-};
-
-export const generateNoteContent = async (topic: string) => {
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `Generate a detailed, well-structured note about the following topic or prompt: "${topic}". 
-    Use markdown formatting for structure (headings, bullet points). 
-    Include a clear title at the very beginning starting with '# ' followed by the title.
-    The response should be the full note content including the title line.`,
-  });
-  const text = response.text || "";
-  
-  let title = "Generated Note";
-  let content = text;
-  
-  if (text.startsWith('# ')) {
-    const lines = text.split('\n');
-    title = lines[0].replace('# ', '').trim();
-    content = lines.slice(1).join('\n').trim();
-  }
-  
-  return { title, content };
+export const generateNoteContent = async (topic: string): Promise<{ title: string; content: string }> => {
+  return post<{ title: string; content: string }>('generate', { topic });
 };
